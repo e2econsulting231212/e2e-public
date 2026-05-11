@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>端到端咨询 — 流程管理实战专家</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--blue:#0057b8;--dark:#003a7d;--light:#e8f0fb;--gold:#f5a623;--gray:#f5f5f5;--text:#333;--text-light:#666}
+body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;color:var(--text);line-height:1.7;background:#fff}
+img{max-width:100%;display:block}
+
+/* NAV */
+nav{background:var(--blue);position:sticky;top:0;z-index:100}
+nav ul{display:flex;list-style:none;max-width:1200px;margin:0 auto;flex-wrap:wrap}
+nav li a{display:block;padding:16px 20px;color:#fff;text-decoration:none;font-size:15px;font-weight:500;transition:background .2s}
+nav li a:hover,nav li a.active{background:var(--dark)}
+
+/* HERO */
+.hero{background:linear-gradient(135deg,var(--blue) 0%,#1a6fc4 100%);color:#fff;padding:80px 24px;text-align:center}
+.hero h1{font-size:2.4rem;font-weight:700;margin-bottom:12px}
+.hero p{font-size:1.15rem;opacity:.9;max-width:700px;margin:0 auto 28px}
+.hero-btns{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+.btn{ display:inline-block;padding:13px 32px;border-radius:8px;font-size:1rem;font-weight:600;text-decoration:none;transition:all .2s}
+.btn-primary{background:#fff;color:var(--blue)}
+.btn-primary:hover{background:#f0f0f0;transform:translateY(-1px)}
+.btn-outline{background:transparent;border:2px solid #fff;color:#fff}
+.btn-outline:hover{background:rgba(255,255,255,.15)}
+
+/* SECTIONS */
+section{padding:64px 24px;max-width:1200px;margin:0 auto}
+.section-title{text-align:center;margin-bottom:40px}
+.section-title h2{font-size:1.8rem;color:var(--blue);margin-bottom:10px}
+.section-title p{color:var(--text-light);font-size:1rem}
+.section-title::after{content:'';display:block;width:60px;height:4px;background:var(--gold);margin:16px auto 0;border-radius:2px}
+
+/* CARD GRID */
+.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px}
+
+/* TEACHER */
+.teacher-showcase{display:flex;flex-direction:column;gap:20px;max-width:1100px;margin:0 auto}
+@media(max-width:768px){.teacher-showcase{max-width:100%}}
+.teacher-img-large{display:flex;align-items:stretch;gap:0;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.08);cursor:pointer}
+.teacher-img-large .teacher-pic{flex-shrink:0;width:420px;display:flex;align-items:flex-start}
+.teacher-img-large .teacher-pic img{width:100%;height:auto;display:block}
+.teacher-img-overlay{flex:1;display:flex;flex-direction:column;justify-content:center;padding:40px}
+.teacher-img-overlay .teacher-name{font-size:1.6rem;font-weight:700;margin-bottom:10px;color:var(--blue)}
+.teacher-img-overlay .teacher-sub{font-size:1rem;color:var(--gold);font-weight:600;margin-bottom:20px}
+.teacher-img-overlay .teacher-desc{font-size:.92rem;color:var(--text-light);line-height:1.9}
+
+/* LIGHTBOX */
+.lightbox{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:999;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;pointer-events:none;transition:opacity .3s}
+.lightbox.show{opacity:1;pointer-events:all}
+.lightbox img{max-width:90vw;max-height:80vh;border-radius:12px;border:4px solid #fff}
+.lightbox .lightbox-caption{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);color:#fff;font-size:1rem;text-align:center}
+
+/* COURSE SCHEDULE */
+.schedule-intro{background:var(--light);border-radius:12px;padding:24px;margin-bottom:32px}
+.schedule-intro p{font-size:.92rem;color:var(--text-light);margin-top:8px}
+.price-box{display:flex;gap:12px;flex-wrap:wrap;margin-top:14px}
+.price-item{flex:1;min-width:160px;background:#fff;border-radius:10px;padding:14px;text-align:center;border:2px solid var(--blue)}
+.price-item .price{font-size:1.4rem;font-weight:700;color:var(--blue)}
+.price-item .desc{font-size:.78rem;color:var(--text-light);margin-top:4px}
+.sched-tabs{display:flex;gap:0;margin-bottom:20px;border-bottom:3px solid #e8e8e8;flex-wrap:wrap}
+.sched-tab{padding:11px 18px;cursor:pointer;font-size:.88rem;font-weight:600;color:var(--text-light);border-bottom:3px solid transparent;transition:all .2s;white-space:nowrap}
+.sched-tab.active,.sched-tab:hover{color:var(--blue);border-bottom-color:var(--blue)}
+.sched-city{display:none}
+.sched-city.active{display:block}
+.sched-table-wrap{overflow-x:auto}
+.sched-table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 3px 16px rgba(0,0,0,.07)}
+.sched-table th{background:#f0f5ff;padding:11px 14px;text-align:left;font-size:.8rem;color:var(--blue);border-bottom:2px solid #dce8ff;white-space:nowrap}
+.sched-table td{padding:10px 14px;border-bottom:1px solid #eee;font-size:.88rem}
+.sched-table tr:last-child td{border-bottom:none}
+.sched-table tr:hover td{background:#fafcff}
+.course-link{color:var(--blue);text-decoration:none;font-weight:600;cursor:pointer;padding:3px 10px;border-radius:5px;border:1.5px solid var(--blue);font-size:.8rem;transition:all .2s;white-space:nowrap;display:inline-block}
+.course-link:hover{background:var(--blue);color:#fff}
+
+/* COURSE OUTLINES */
+.outline-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}
+.outline-tab{padding:8px 18px;border-radius:24px;border:2px solid var(--blue);background:#fff;color:var(--blue);font-size:.85rem;cursor:pointer;transition:all .2s;font-weight:500}
+.outline-tab.active,.outline-tab:hover{background:var(--blue);color:#fff}
+.outline-city{margin-bottom:32px}
+.outline-city h3{font-size:1.15rem;color:var(--blue);margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid var(--light)}
+.outline-course{margin-bottom:20px;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.05)}
+.outline-course summary{cursor:pointer;padding:16px 20px;list-style:none;display:flex;align-items:center;gap:12px;background:#fafcff;font-weight:600;font-size:.95rem;color:var(--text)}
+.outline-course summary::-webkit-details-marker{display:none}
+.outline-course summary::before{content:'▶';font-size:.7rem;color:var(--blue);transition:transform .2s;display:inline-block}
+.outline-course[open] summary::before{transform:rotate(90deg)}
+.outline-course .outline-body{padding:16px 20px;font-size:.88rem;color:var(--text-light);line-height:2}
+.outline-course .outline-body h4{color:var(--blue);font-size:.88rem;margin:12px 0 6px;font-weight:600}
+.outline-course .outline-body ul{margin-left:20px}
+.outline-course .outline-body li{margin-bottom:4px}
+
+/* TESTIMONIALS */
+.testi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+.testi-card{background:#fff;border-radius:12px;padding:24px;border-left:4px solid var(--gold);box-shadow:0 2px 12px rgba(0,0,0,.06)}
+.testi-card .quote{font-style:italic;color:var(--text);margin-bottom:14px;font-size:.92rem;line-height:1.8}
+.testi-card .company{font-size:.82rem;color:var(--blue);font-weight:600}
+
+/* BD SECTION */
+.bd-wrap{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start}
+@media(max-width:768px){.bd-wrap{grid-template-columns:1fr}}
+.bd-panel{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 3px 16px rgba(0,0,0,.07)}
+.bd-panel h3{background:var(--blue);color:#fff;padding:14px 20px;font-size:.95rem}
+.bd-tabs{display:flex;border-bottom:2px solid var(--light);flex-wrap:wrap}
+.bd-tab{flex:1;padding:12px 8px;text-align:center;cursor:pointer;font-size:.82rem;font-weight:600;color:var(--text-light);transition:all .2s;border-bottom:3px solid transparent;min-width:80px}
+.bd-tab.active,.bd-tab:hover{color:var(--blue);border-bottom-color:var(--blue)}
+.bd-content{padding:20px;font-size:.88rem;line-height:2;color:var(--text);display:none}
+.bd-content.active{display:block}
+.bd-content h4{color:var(--blue);font-size:.9rem;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--light)}
+.bd-content ul{margin-left:18px}
+.bd-content li{margin-bottom:6px}
+.bd-highlight{background:var(--light);border-radius:8px;padding:14px;margin:10px 0;font-size:.85rem}
+.bd-example{background:#fffbf0;border-left:4px solid var(--gold);padding:14px;margin:10px 0;border-radius:0 8px 8px 0;font-size:.85rem}
+
+/* PARTNER INFO */
+.partner-info{background:var(--light);border-radius:14px;padding:28px;margin-top:28px}
+.partner-info h3{color:var(--blue);margin-bottom:16px;font-size:1.05rem}
+.partner-steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+.partner-step{background:#fff;border-radius:10px;padding:18px;text-align:center}
+.partner-step .num{width:36px;height:36px;background:var(--blue);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-weight:700;font-size:.9rem}
+.partner-step h4{font-size:.9rem;color:var(--text);margin-bottom:6px}
+.partner-step p{font-size:.8rem;color:var(--text-light)}
+
+/* CLIENTS */
+.client-list{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.client-tag{background:#fff;border:1px solid #ddd;border-radius:24px;padding:7px 18px;font-size:.82rem;color:var(--text);transition:all .2s}
+.client-tag:hover{background:var(--blue);color:#fff;border-color:var(--blue);cursor:default}
+
+/* FOOTER */
+footer{background:var(--dark);color:#fff;text-align:center;padding:36px 24px;font-size:.88rem}
+footer a{color:var(--gold);text-decoration:none}
+footer a:hover{text-decoration:underline}
+
+/* LIGHTBOX OVERLAY */
+#lightbox-overlay{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:9999;display:none;align-items:center;justify-content:center;cursor:pointer;flex-direction:column}
+#lightbox-overlay.show{display:flex}
+#lightbox-overlay img{max-width:92vw;max-height:75vh;border-radius:12px;border:4px solid #fff;object-fit:contain}
+#lightbox-overlay .lb-caption{margin-top:14px;color:#fff;font-size:.95rem;text-align:center}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <ul>
+    <li><a href="#home">首页</a></li>
+    <li><a href="#about">关于我们</a></li>
+    <li><a href="#teachers">讲师团队</a></li>
+    <li><a href="#schedule">课程安排</a></li>
+    <li><a href="#outlines">课程大纲</a></li>
+    <li><a href="#clients">服务客户</a></li>
+    <li><a href="#bd">合伙人计划</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="home" class="hero">
+  <h1>端到端咨询</h1>
+  <p>专注流程管理实战落地，帮助企业从"靠英雄"走向"靠组织"，实现持续增长</p>
+  <div class="hero-btns">
+    <a href="#schedule" class="btn btn-primary">查看课程安排</a>
+    <a href="#bd" class="btn btn-outline">成为合伙人</a>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="section-title">
+    <h2>我们是谁</h2>
+    <p>国内实战派流程管理咨询公司，企业数字化变革助推者</p>
+  </div>
+  <div class="card-grid">
+    <div style="background:#fff;border-radius:14px;padding:28px;box-shadow:0 3px 16px rgba(0,0,0,.07)">
+      <div style="font-size:2rem;margin-bottom:12px">🎯</div>
+      <h3 style="color:var(--blue);margin-bottom:8px">实战派咨询</h3>
+      <p style="color:var(--text-light);font-size:.9rem">20+年深耕流程管理，兼具华为、美的、ATL等世界500强内部操盘经验，300+企业咨询培训顾问视野</p>
+    </div>
+    <div style="background:#fff;border-radius:14px;padding:28px;box-shadow:0 3px 16px rgba(0,0,0,.07)">
+      <div style="font-size:2rem;margin-bottom:12px">🔄</div>
+      <h3 style="color:var(--blue);margin-bottom:8px">端到端落地</h3>
+      <p style="color:var(--text-light);font-size:.9rem">不只是方法论传授，更注重将战略解码到流程、组织、绩效，转化为可执行的管理行动</p>
+    </div>
+    <div style="background:#fff;border-radius:14px;padding:28px;box-shadow:0 3px 16px rgba(0,0,0,.07)">
+      <div style="font-size:2rem;margin-bottom:12px">📚</div>
+      <h3 style="color:var(--blue);margin-bottom:8px">体系化课程</h3>
+      <p style="color:var(--text-light);font-size:.9rem">从架构规划到设计优化，从绩效管理到AI赋能，覆盖流程管理全生命周期</p>
+    </div>
+  </div>
+</section>
+
+  <!-- TEACHERS -->
+<section id="teachers" style="background:var(--gray)">
+  <div class="section-title">
+    <h2>核心讲师团队</h2>
+    <p>点击查看大图</p>
+  </div>
+  <div class="teacher-showcase">
+    <!-- 陈立云 -->
+    <div class="teacher-img-large" onclick="openLightbox(this, '陈立云')">
+      <div class="teacher-pic">
+        <img src="images/陈立云.png" alt="陈立云">
+      </div>
+      <div class="teacher-img-overlay">
+        <div class="teacher-name">陈立云</div>
+        <div class="teacher-sub">流程实战专家 · 企业长期陪跑顾问</div>
+        <div class="teacher-desc">22年流程管理从业经验，曾任职华为流程管理专家，主导多家大型企业流程变革项目。擅长战略到流程的端到端打通，为企业构建完整的流程管理体系。</div>
+        <div class="zoom-hint">🔍 点击查看大图</div>
+      </div>
+    </div>
+    <!-- 金国华 -->
+    <div class="teacher-img-large" onclick="openLightbox(this, '金国华')">
+      <div class="teacher-pic">
+        <img src="images/金国华.png" alt="金国华">
+      </div>
+      <div class="teacher-img-overlay">
+        <div class="teacher-name">金国华</div>
+        <div class="teacher-sub">端到端咨询联合创始人 · AMT华南首席流程专家</div>
+        <div class="teacher-desc">国内流程管理领域资深专家，服务过美的、华为等500强企业，学员遍布各行业。课程实战性强，擅长将复杂的管理方法论转化为可落地的工具模板。</div>
+        <div class="zoom-hint">🔍 点击查看大图</div>
+      </div>
+    </div>
+    <!-- 詹老师 -->
+    <div class="teacher-img-large" onclick="openLightbox(this, '詹老师')">
+      <div class="teacher-pic">
+        <img src="images/詹老师.png" alt="詹老师">
+      </div>
+      <div class="teacher-img-overlay">
+        <div class="teacher-name">詹老师</div>
+        <div class="teacher-sub">端到端咨询核心讲师 · AI+流程管理专家</div>
+        <div class="teacher-desc">专注AI与流程管理融合创新，帮助企业运用AI技术提升流程诊断、设计与监控效率。主讲AI+流程管理实战课程，培养既懂流程又懂AI的复合型人才。</div>
+        <div class="zoom-hint">🔍 点击查看大图</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCHEDULE -->
+<section id="schedule">
+  <div class="section-title">
+    <h2>2026年课程安排</h2>
+    <p>体系化课程，随报随学，最高可享8折优惠</p>
+  </div>
+  <div class="schedule-intro">
+    <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center">
+      <span style="font-weight:700;color:var(--blue);font-size:1.05rem">公开课定价：<span style="font-size:1.4rem">3000元/人天</span></span>
+      <span style="color:var(--text-light);font-size:.85rem">| AI课程同价，不参与折扣</span>
+    </div>
+    <div class="price-box">
+      <div class="price-item">
+        <div class="price">10800元</div>
+        <div class="desc">四天全报 · 9折优惠</div>
+      </div>
+      <div class="price-item">
+        <div class="price">9800元/年</div>
+        <div class="desc">VIP年卡 · 全年5折 · 线上课程优惠价</div>
+      </div>
+      <div class="price-item">
+        <div class="price">6折起</div>
+        <div class="desc">老学员续报同一课程</div>
+      </div>
+      <div class="price-item">
+        <div class="price">8折</div>
+        <div class="desc">老学员报读不同课程</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 课程Tab切换 -->
+  <div class="sched-tabs">
+    <div class="sched-tab active" onclick="switchCity(this,'shanghai-may')">上海站（5月）</div>
+    <div class="sched-tab" onclick="switchCity(this,'shanghai-nov')">上海站（11月）</div>
+    <div class="sched-tab" onclick="switchCity(this,'shenzhen-spring')">深圳站·春</div>
+    <div class="sched-tab" onclick="switchCity(this,'shenzhen-summer')">深圳站·夏</div>
+    <div class="sched-tab" onclick="switchCity(this,'shenzhen-autumn')">深圳站·秋</div>
+    <div class="sched-tab" onclick="switchCity(this,'shenzhen-winter')">深圳站·冬</div>
+  </div>
+
+  <div id="shanghai-may" class="sched-city active">
+    <div style="margin-bottom:12px;font-weight:600;color:var(--blue)">🏙️ 上海站 · 2026年5月28-31日（陈立云老师主讲）</div>
+    <div class="sched-table-wrap">
+      <table class="sched-table">
+        <thead><tr><th>课程</th><th>讲师</th><th>日期</th><th>大纲</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><a class="course-link" href="pdfs/001流程规划与落地.pdf" target="_blank">流程规划与落地</a></td>
+            <td>陈立云</td><td>5月28日（周四）</td>
+            <td><a class="course-link" href="pdfs/001流程规划与落地.pdf" target="_blank">📄 查看大纲</a></td>
+          </tr>
+          <tr>
+            <td><a class="course-link" href="pdfs/002流程设计与优化.pdf" target="_blank">流程设计与优化</a></td>
+            <td>陈立云</td><td>5月29日（周五）</td>
+            <td><a class="course-link" href="pdfs/002流程设计与优化.pdf" target="_blank">📄 查看大纲</a></td>
+          </tr>
+          <tr>
+            <td><a class="course-link" href="pdfs/003流程绩效管理.pdf" target="_blank">流程绩效管理</a></td>
+            <td>陈立云</td><td>5月30日（周六）</td>
+            <td><a class="course-link" href="pdfs/003流程绩效管理.pdf" target="_blank">📄 查看大纲</a></td>
+          </tr>
+          <tr>
+            <td><a class="course-link" href="pdfs/AI+流程管理.pdf" target="_blank">AI+流程管理</a></td>
+            <td>詹老师</td><td>5月31日（周日）</td>
+            <td><a class="course-link" href="pdfs/AI+流程管理.pdf" target="_blank">📄 查看大纲</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="shanghai-nov" class="sched-city">
+    <div style="margin-bottom:12px;font-weight:600;color:var(--blue)">🏙️ 上海站 · 2026年11月27-29日（金国华老师主讲）</div>
+    <div class="sched-table-wrap">
+      <table class="sched-table">
+        <thead><tr><th>课程</th><th>讲师</th><th>日期</th><th>大纲</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><a class="course-link" href="pdfs/11月上海站大纲.pdf" target="_blank">流程规划与落地</a></td>
+            <td>金国华</td><td>11月27日（周五）</td>
+            <td><a class="course-link" href="pdfs/11月上海站大纲.pdf" target="_blank">📄 查看大纲</a></td>
+          </tr>
+          <tr>
+            <td><a class="course-link" href="pdfs/11月上海站大纲.pdf" target="_blank">流程设计与优化</a></td>
+            <td>金国华</td><td>11月28日（周六）</td>
+            <td><a class="course-link" href="pdfs/11月上海站大纲.pdf" target="_blank">📄 查看大纲</a></td>
+          </tr>
+          <tr>
+            <td><a class="course-link" href="pdfs/11月上海站大纲.pdf" target="_blank">流程绩效管理</a></td>
+            <td>金国华</td><td>11月29日（周日）</td>
+            <td><a class="course-link" href="pdfs/11月上海站大纲.pdf" target="_blank">📄 查看大纲</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="shenzhen-spring" class="sched-city">
+    <div style="margin-bottom:12px;font-weight:600;color:var(--blue)">🌊 深圳站 · 2026年3月26-29日</div>
+    <div class="sched-table-wrap">
+      <table class="sched-table">
+        <thead><tr><th>课程</th><th>讲师</th><th>日期</th><th>大纲</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><a class="course-link" href="pdfs/001流程规划与落地.pdf" target="_blank">流程架构规划</a></td>
+            <td>金国华</td><td>3月26日（周四）</td>
+            <td><a class="course-link" href="pdfs/001流程规划与落地.pdf" target="_blank">📄 查看大纲</a></td>
+          </tr>
+          <tr>
+            <td><a class="course-link" href="pdfs/流程型组织建设.pdf" target="_blank">流程型组织建设</a></td>
+            <td>陈立云</td><td>3月27日（周五）</td>
+            <td><a class="course-link" href="pdfs/流程型组织建设.pdf" target="_blank">📄 查看大纲</a></td>
+          </tr>
+          <tr>
+            <td><a class="course-link" href="pdfs/IT 架构规划.pdf" target="_blank">IT架构规划</a></td>
+            <td>齐昕</td><td>3月28日（周六）</td>
+            <td><a class="course-link" href="pdfs/IT 架构规划.pdf" target="_blank">📄 查看大纲</a></td>
+          </tr>
+          <tr>
+            <td><a class="course-link" href="pdfs/AI+流程管理.pdf" target="_blank">AI+流程管理</a></td>
+            <td>詹老师</td><td>3月29日（周日）</td>
+            <td><a class="course-link" href="pdfs/AI+流程管理.pdf" target="_blank">📄 查看大纲</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="shenzhen-summer" class="sched-city">
+    <div style="margin-bottom:12px;font-weight:600;color:var(--blue)">☀️ 深圳站 · 2026年6月11-14日</div>
+    <div class="sched-table-wrap">
+      <table class="sched-table">
+        <thead><tr><th>课程</th><th>讲师</th><th>日期</th><th>大纲</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><a class="course-link" href="pdfs/流程设计实战.pdf" target="_blank">流程设计实战</a></td>
+            <td>陈立云</td><td>6月11日（周四）</td>
+            <td><a class="course-link" href="pdfs/流程设计实战.pdf" target="_blank">📄 查看大纲</a></td>
+          </tr>
+          <tr>
+            <td><a class="course-link" href="pdfs/流程优化实战.pdf" target="_blank">流程优化实战</a></td>
+            <td>金国华</td><td>6月12日（周五）</td>
+            <td><a class="course-link" href="pdfs/流程优化实战.pdf" target="_blank">📄 查看大纲</a></td>
+          </tr>
+          <tr>
+            <td><a class="course-link" href="pdfs/变革项目管理.pdf" target="_blank">变革项目管理</a></td>
+            <td>金国华</td><td>6月13日（周六）</td>
+            <td><a class="course-link" href="pdfs/变革项目管理.pdf" target="_blank">📄 查看大纲</a></td>
+          </tr>
+          <tr>
+            <td><a class="course-link" href="pdfs/AI+流程管理.pdf" target="_blank">AI+流程管理</a></td>
+            <td>詹老师</td><td>6月14日（周日）</td>
+            <td><a class="course-link" href="pdfs/AI+流程管理.pdf" target="_blank">📄 查看大纲</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="shenzhen-autumn" class="sched-city">
+    <div style="margin-bottom:12px;font-weight:600;color:var(--blue)">🍂 深圳站 · 2026年9月10-13日</div>
+    <div class="sched-table-wrap">
+      <table class="sched-table">
+        <thead><tr><th>课程</th><th>讲师</th><th>日期</th><th>大纲</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><a class="course-link" href="pdfs/卓越运营管理.pdf" target="_blank">卓越运营管理</a></td>
+            <td>陈立云</td><td>9月10日（周四）</td>
+            <td><a class="course-link" href="pdfs/卓越运营管理.pdf" target="_blank">📄 查看大纲</a></td>
+          </tr>
+          <tr>
+            <td><a class="course-link" href="pdfs/流程审计实战.pdf" target="_blank">流程审计实战</a></td>
+            <td>陈立云</td><td>9月11日（周五）</td>
+            <td><a class="course-link" href="pdfs/流程审计实战.pdf" target="_blank">📄 查看大纲</a></td>
+          </tr>
+          <tr>
+            <td><a class="course-link" href="pdfs/流程绩效实战.pdf" target="_blank">流程绩效实战</a></td>
+            <td>金国华</td><td>9月12日（周六）</td>
+            <td><a class="course-link" href="pdfs/流程绩效实战.pdf" target="_blank">📄 查看大纲</a></td>
+          </tr>
+          <tr>
+            <td><a class="course-link" href="pdfs/AI+流程管理.pdf" target="_blank">AI+流程管理</a></td>
+            <td>詹老师</td><td>9月13日（周日）</td>
+            <td><a class="course-link" href="pdfs/AI+流程管理.pdf" target="_blank">📄 查看大纲</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="shenzhen-winter" class="sched-city">
+    <div style="margin-bottom:12px;font-weight:600;color:var(--blue)">❄️ 深圳站 · 2026年12月10-13日</div>
+    <div class="sched-table-wrap">
+      <table class="sched-table">
+        <thead><tr><th>课程</th><th>讲师</th><th>日期</th><th>大纲</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><a class="course-link" href="pdfs/基于流程的战略解码.pdf" target="_blank">基于流程的战略解码</a></td>
+            <td>陈立云</td><td>12月10日（周四）</td>
+            <td><a class="course-link" href="pdfs/基于流程的战略解码.pdf" target="_blank">📄 查看大纲</a></td>
+          </tr>
+          <tr>
+            <td><a class="course-link" href="pdfs/流程战略规划.pdf" target="_blank">流程战略规划</a></td>
+            <td>金国华</td><td>12月11日（周五）</td>
+            <td><a class="course-link" href="pdfs/流程战略规划.pdf" target="_blank">📄 查看大纲</a></td>
+          </tr>
+          <tr>
+            <td><a class="course-link" href="pdfs/数字化转型规划.pdf" target="_blank">数字化转型规划</a></td>
+            <td>齐昕</td><td>12月12日（周六）</td>
+            <td><a class="course-link" href="pdfs/数字化转型规划.pdf" target="_blank">📄 查看大纲</a></td>
+          </tr>
+          <tr>
+            <td><a class="course-link" href="pdfs/AI+流程管理.pdf" target="_blank">AI+流程管理</a></td>
+            <td>詹老师</td><td>12月13日（周日）</td>
+            <td><a class="course-link" href="pdfs/AI+流程管理.pdf" target="_blank">📄 查看大纲</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- OUTLINES removed by user -->
+
+<!-- CLIENTS -->
+<section id="clients">
+  <div class="section-title">
+    <h2>服务客户</h2>
+    <p>部分标杆客户，覆盖多个行业领域</p>
+  </div>
+  <div class="client-list">
+    <span class="client-tag">华为</span><span class="client-tag">美的</span><span class="client-tag">宁德时代</span><span class="client-tag">科大讯飞</span><span class="client-tag">海康威视</span>
+    <span class="client-tag">汇川技术</span><span class="client-tag">百度</span><span class="client-tag">京东</span><span class="client-tag">中国商飞</span><span class="client-tag">中车</span>
+    <span class="client-tag">北京奔驰</span><span class="client-tag">欧派</span><span class="client-tag">九牧</span><span class="client-tag">方太</span><span class="client-tag">金意陶</span>
+    <span class="client-tag">中国移动</span><span class="client-tag">泸州老窖</span><span class="client-tag">湖南钢铁</span><span class="client-tag">招商证券</span><span class="client-tag">海信</span>
+    <span class="client-tag">隆基绿能</span><span class="client-tag">华润</span><span class="client-tag">青啤</span><span class="client-tag">三一重工</span><span class="client-tag">宁德时代</span>
+  </div>
+</section>
+
+<!-- BD / 合伙人 -->
+<section id="bd" style="background:var(--gray)">
+  <div class="section-title">
+    <h2>合伙人计划</h2>
+    <p>成为端到端咨询合伙人，一起传播实战派流程管理价值</p>
+  </div>
+  <div class="partner-info">
+    <h3>🤝 合伙人定位</h3>
+    <p style="font-size:.92rem;color:var(--text);margin-bottom:16px">您是端到端的学员，也是我们的合伙人。您认可我们的课程价值，向身边朋友、同事、企业推荐端到端公开课，推荐成功后获得丰厚佣金回报。</p>
+    <div class="partner-steps">
+      <div class="partner-step">
+        <div class="num">1</div>
+        <h4>成为学员</h4>
+        <p>参加端到端公开课，深入学习流程管理实战方法</p>
+      </div>
+      <div class="partner-step">
+        <div class="num">2</div>
+        <h4>申请合伙人</h4>
+        <p>课程结束后联系课程顾问，申请成为合伙人</p>
+      </div>
+      <div class="partner-step">
+        <div class="num">3</div>
+        <h4>推荐课程</h4>
+        <p>向身边朋友、企业推荐公开课或内训服务</p>
+      </div>
+      <div class="partner-step">
+        <div class="num">4</div>
+        <h4>获得佣金</h4>
+        <p>学员报名缴费后，获取推荐佣金（详情请咨询课程顾问）</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bd-wrap" style="margin-top:28px">
+    <div class="bd-panel">
+      <h3>📋 BD话术 — 合伙人版</h3>
+      <div class="bd-tabs">
+        <div class="bd-tab active" onclick="switchTab(this,0)">开场话术</div>
+        <div class="bd-tab" onclick="switchTab(this,1)">痛点挖掘</div>
+        <div class="bd-tab" onclick="switchTab(this,2)">方案呈现</div>
+        <div class="bd-tab" onclick="switchTab(this,3)">异议处理</div>
+        <div class="bd-tab" onclick="switchTab(this,4)">促成签单</div>
+      </div>
+      <div class="bd-content active">
+        <h4>🌟 开场 — 建立信任</h4>
+        <div class="bd-example">"上次上了端到端的流程课，感觉特别实用，老师都是真正在企业里做过的，不是纸上谈兵。最近他们开了新一期的公开课，5月份在上海，4天系统学流程架构和设计，感觉挺适合你们公司的，要不要了解一下？"</div>
+        <ul>
+          <li>从自身经历切入，降低对方戒备心</li>
+          <li>强调"实战"而非"理论"，点出老师的500强背景</li>
+          <li>用具体时间、地点开篇，给对方清晰画面感</li>
+          <li>用问句收尾，邀请对话而非单向灌输</li>
+        </ul>
+        <div class="bd-highlight">📌 进阶开场（适用于关系较熟的客户）：<br>
+        "我最近上了一门特别实在的流程管理课，4天下来感觉打开了思路。你们公司现在流程这块做得怎么样？我感觉他们的方法挺适合你们这种发展阶段的企业。"</div>
+        <div class="bd-highlight">📌 借势开场（适用于朋友圈分享/社群）：<br>
+        "刚看到端到端5月份在深圳开公开课，想起之前推荐给朋友效果很好。他们的老师都是华为、美的出来的，讲的都是企业真正能用上的东西。有兴趣了解的话找我，帮你要个内部推荐价。"</div>
+      </div>
+      <div class="bd-content">
+        <h4>🎯 痛点挖掘 — 引发共鸣</h4>
+        <div class="bd-example">"你们现在跨部门协作顺畅吗？流程是谁说了算，有没有清晰的流程责任人体系？"</div>
+        <div class="bd-highlight">常见痛点关键词：跨部门打架 / 流程靠人推 / 战略落不了地 / 流程和执行两张皮 / 上了系统流程反而更慢 / 人员变动带走经验</div>
+        <ul>
+          <li>不要直接说"你们管理有问题"——用开放式问题引导</li>
+          <li>针对不同行业客户，使用对应行业的痛点案例</li>
+          <li>让对方自己说出痛点，认同感更强</li>
+        </ul>
+        <div class="bd-highlight">📌 分行业痛点切入问题：</div>
+        <ul style="font-size:.85rem">
+          <li><strong>制造业：</strong>"你们新产品导入流程顺畅吗？从研发到量产，中间跨几个部门，周期大概多久？"</li>
+          <li><strong>科技/互联网：</strong>"你们产品需求从提出到上线，流程谁来把控？上了系统之后流程反而更复杂了吗？"</li>
+          <li><strong>金融：</strong>"你们风控流程和业务流程是分开的吗？合规要求和业务效率怎么平衡的？"</li>
+          <li><strong>消费品：</strong>"经销商政策执行到位吗？窜货、乱价这些问题有吗？采购到付款的流程效率怎么样？"</li>
+          <li><strong>集团型企业：</strong>"总部和子公司在流程上是什么关系？子公司流程是总部管还是各管各的？"</li>
+        </ul>
+        <div class="bd-highlight">📌 深挖痛点的三步法：<br>
+        ① <strong>问现象</strong>："最近项目延期多吗？"<br>
+        ② <strong>问影响</strong>："延期对客户交付和回款有什么影响？"<br>
+        ③ <strong>问根因</strong>："你觉得核心问题出在哪？流程还是人？" → 这时对方往往会自己说出"流程不清、没人负责"等关键词</div>
+      </div>
+      <div class="bd-content">
+        <h4>💡 方案呈现 — 突出价值</h4>
+        <div class="bd-example">"端到端是国内做流程管理最实战的一家公司，老师都来自华为、美的这些企业。他们的课不是讲概念，是给方法、给工具、给模板，4天下来你回去就能落地。而且价格也很实在，一个人一天3000，四天全报10800元。深圳上海都有课。"</div>
+        <ul>
+          <li>突出"实战"标签，与市面上纯理论培训区分</li>
+          <li>给出具体价格锚点（3000元/天）</li>
+          <li>告知全报折扣优惠（10800元四天9折），降低决策门槛</li>
+          <li>提及多城市开课，增加便利性</li>
+        </ul>
+        <div class="bd-highlight">📌 方案呈现三要素（FEB法则）：<br>
+        <strong>F（Feature）</strong>：讲清楚课程是什么<br>
+        <strong>E（Experience）</strong>：用真实学员案例说明效果<br>
+        <strong>B（Benefit）</strong>：强调对客户的具体收益</div>
+        <div class="bd-highlight">📌 竞品对比话术（对方提到其他机构时）：<br>
+        "市面上做流程培训的很多，但大多数是高校教授在讲，理论多、实操少。端到端的老师全是企业实战派，有的还在华为、美的主导过流程变革，这种经验是书本上学不到的。"</div>
+        <div class="bd-highlight">📌 学员收益清单（可视情况选用）：<br>
+        ✓ 流程体系搭建方法论 → 能独立设计适合自己公司的流程架构<br>
+        ✓ 20+可直接用的工具模板 → 带回去就能在工作中用<br>
+        ✓ 专属老师答疑辅导 → 工作中遇到问题可以请教老师<br>
+        ✓ 校友社群资源对接 → 认识各行业的流程管理同行</div>
+      </div>
+      <div class="bd-content">
+        <h4>🛡️ 异议处理 — 化解顾虑</h4>
+        <div class="bd-highlight">❌ "价格有点贵" → ✅ "一天3000其实不贵，您算算请顾问做一天内训多少钱？端到端的课1个人1天才3000，回去还能带团队一起学。"</div>
+        <div class="bd-highlight">❌ "学完能落地吗" → ✅ "这就是端到端和其他机构最大的区别。老师给方法、给模板，还带着你用自己公司的案例做workshop，回去直接能用。"</div>
+        <div class="bd-highlight">❌ "没时间" → ✅ "4天集中学比平时零散学效率高很多。而且他们有年卡，一年可以反复学，性价比更高。"</div>
+        <div class="bd-highlight">❌ "我先考虑" → ✅ "没问题，这很正常。我把课程大纲和最近一期的安排发您，您可以先看看课程内容有没有戳中您的痛点。"</div>
+        <div class="bd-highlight">❌ "我们公司流程已经很好了" → ✅ "流程好不代表不需要优化，华为、美的这样的大企业都在持续优化。端到端教的是方法论，学完您可以自己持续优化，不用一直依赖外部。"</div>
+        <div class="bd-highlight">❌ "我先让下属去听听" → ✅ "建议您亲自去。中高管最需要掌握的是流程思维和判断标准，下属学完回来，您能看懂他们的方案吗？这个课最适合的就是一把手和核心管理层。"</div>
+        <div class="bd-highlight">❌ "老板不一定批预算" → ✅ "这个课可以走培训预算，也可以走咨询辅导费，灵活性很强。而且学完能直接用在工作上，ROI很高，老板一般都会认可这种投入产出比明显的学习。"</div>
+        <div class="bd-highlight">❌ "线上听听就行了" → ✅ "线上学习缺乏互动和实战练习，4天线下是浸泡式学习，老师会针对每个学员的问题当场解答，这是线上完全替代不了的。"</div>
+        <div class="bd-highlight">❌ "课程太多，不知道选哪个" → ✅ "您可以把公司目前最大的管理痛点告诉我，顾问会根据您的需求推荐最合适的课程。而且全报四天最划算，一次性学完整套体系。"</div>
+        <div class="bd-highlight">❌ "跟其他机构有什么区别" → ✅ "端到端的老师全是一线实战派，不是职业讲师。每个课程都有工具模板包，学完直接带回公司用。而且有学员群，后续问题可以持续交流。"</div>
+        <div class="bd-highlight">❌ "能不能先试一天" → ✅ "可以先报一天体验，但建议全报四天效果最佳。单天学习是碎片化的，四天串联才能形成完整的方法论体系。"</div>
+      </div>
+      <div class="bd-content">
+        <h4>✅ 促成签单 — 推动行动</h4>
+        <div class="bd-example">"那这期5月28号上海开课，我现在就帮您预约一个名额，您把手机号给我就行。提前报还能享受9折优惠，名额有限，您要锁定的话我现在就帮您操作。"</div>
+        <ul>
+          <li>给具体行动指令（"把手机号给我"），而非"您考虑一下"</li>
+          <li>使用稀缺性（名额有限、提前报名折扣）</li>
+          <li>表示"我来帮您操作"，降低对方行动门槛</li>
+          <li>不要等对方主动说"我要报名"——主动推进</li>
+        </ul>
+        <div class="bd-highlight">💬 结束语建议："好，那我先帮您报个名占个位置，价格我帮您跟课程顾问申请最大优惠，您先看看课程内容，如果有任何问题随时找我！"</div>
+        <div class="bd-highlight">📌 多种促成技巧：<br>
+        <strong>① 直接成交法：</strong>"我现在帮您预约一个名额，您把信息给我。"<br>
+        <strong>② 优惠促成法：</strong>"现在报名享9折，再过一周就没这个价了，您要不要先锁定优惠？"<br>
+        <strong>③ 试水成交法：</strong>"您可以先报一天体验，觉得好再全报，这样压力小一点。"<br>
+        <strong>④ 稀缺成交法：</strong>"这期名额只剩3个了，您要的话我现在就帮您占一个。"<br>
+        <strong>⑤ 回电确认法：</strong>"这样，我加您微信，把课程详细资料发您，您看完有任何问题随时问我，我们约个时间我给您电话讲解。"</div>
+        <div class="bd-highlight">📌 对方说"考虑一下"后的跟进策略：<br>
+        "完全理解，买课是大决定。那这样，我把课程大纲和最近一期的学员名单发您，您可以先了解下都是什么类型的企业在学。如果有任何问题随时找我，不用有压力。"<br>
+        <br>
+        跟进节点建议：<br>
+        · 发送资料后第2天：微信问候，确认收到<br>
+        · 第5天：发一条行业痛点相关的文章，顺便提及课程<br>
+        · 第10天：告知近期截止的优惠，制造紧迫感<br>
+        · 第15天：直接电话沟通，了解真实顾虑</div>
+      </div>
+    </div>
+    <div class="bd-panel">
+      <h3>🎯 推荐话术要点</h3>
+      <div class="bd-highlight" style="font-size:.88rem">
+        <strong>推荐三句话：</strong><br>
+        ① "我刚上了一家做流程管理的课，老师特别实战，都是华为、美的出来的。"<br>
+        ② "他们的课不是讲概念，是直接给方法、给工具，学完回去就能用。"<br>
+        ③ "正好他们5月份在上海有4天的公开课，你要感兴趣我帮你问问有没有优惠。"
+      </div>
+      <div style="margin-top:16px">
+        <h4 style="color:var(--blue);font-size:.9rem;margin-bottom:10px">推荐时的加分项：</h4>
+        <ul style="font-size:.85rem;color:var(--text-light)">
+          <li>分享自己上课的真实收获（哪怕一点具体细节）</li>
+          <li>提及具体帮到自己的某个方法或工具</li>
+          <li>告知对方课程有年卡/团购优惠，介绍人也可以享受</li>
+          <li>保持真诚，不要过度推销——你是分享，不是卖课</li>
+        </ul>
+      </div>
+      <div style="margin-top:20px">
+        <h4 style="color:var(--blue);font-size:.9rem;margin-bottom:10px">合伙人FAQ（对方可能会问）：</h4>
+        <ul style="font-size:.85rem;color:var(--text-light)">
+          <li><strong>Q：推荐有什么好处？</strong> A：推荐成功后获得佣金，具体比例咨询课程顾问。</li>
+          <li><strong>Q：我自己报名有优惠吗？</strong> A：老学员续报同一课程享6折，报不同课程享8折。</li>
+          <li><strong>Q：适合哪些人参加？</strong> A：中高管、流程管理负责人、HR负责人、企业经营者。</li>
+          <li><strong>Q：可以企业内训吗？</strong> A：可以，根据企业需求定制课程内容，请联系顾问咨询。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>端到端咨询 &copy; 2026 | 流程管理实战专家</p>
+  <p style="margin-top:8px">官网：<a href="#">www.e2eskill.com</a> | 微信公众号：端到端流程管理</p>
+</footer>
+
+<!-- LIGHTBOX -->
+<div id="lightbox-overlay" onclick="closeLightbox()">
+  <img id="lightbox-img" src="" alt="">
+  <div class="lb-caption" id="lightbox-caption"></div>
+</div>
+
+<script>
+// Lightbox
+function openLightbox(el, caption) {
+  var img = el.querySelector('img');
+  document.getElementById('lightbox-img').src = img.src;
+  document.getElementById('lightbox-caption').textContent = caption;
+  document.getElementById('lightbox-overlay').classList.add('show');
+}
+function closeLightbox() {
+  document.getElementById('lightbox-overlay').classList.remove('show');
+}
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeLightbox();
+});
+
+// BD Tabs
+function switchTab(tab, idx) {
+  var panel = tab.closest('.bd-panel');
+  panel.querySelectorAll('.bd-tab').forEach(function(t, i) {
+    t.classList.toggle('active', i === idx);
+  });
+  panel.querySelectorAll('.bd-content').forEach(function(c, i) {
+    c.classList.toggle('active', i === idx);
+  });
+}
+
+// Schedule City Tabs
+function switchCity(tab, cityId) {
+  document.querySelectorAll('.sched-tab').forEach(function(t) { t.classList.remove('active'); });
+  document.querySelectorAll('.sched-city').forEach(function(c) { c.classList.remove('active'); });
+  tab.classList.add('active');
+  document.getElementById(cityId).classList.add('active');
+}
+
+// Smooth scroll
+document.querySelectorAll('nav a').forEach(function(a) {
+  a.addEventListener('click', function(e) {
+    var target = document.querySelector(this.getAttribute('href'));
+    if (target) {
+      e.preventDefault();
+      target.scrollIntoView({behavior: 'smooth', block: 'start'});
+    }
+  });
+});
+</script>
+</body>
+</html>
